@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
+	"github.com/lhopki01/dirin/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -55,6 +55,7 @@ func registerSwitchCmd(rootCmd *cobra.Command) {
 
 func runSwitchCmd(args []string) {
 	fmt.Printf("Activating %s\n", args[0])
+	config.LoadCollection(args[0])
 }
 
 func registerDestroyCmd(rootCmd *cobra.Command) {
@@ -97,46 +98,6 @@ func runListCmd(args []string) {
 	fmt.Printf("Listing collections\n")
 }
 
-func registerAddCmd(rootCmd *cobra.Command) {
-	addCmd := &cobra.Command{
-		Use:   "add [list of directories]",
-		Short: "Add a list directories to a collection",
-		Run: func(cmd *cobra.Command, args []string) {
-			runAddCmd(args)
-		},
-	}
-	rootCmd.AddCommand(addCmd)
-	err := viper.BindPFlags(addCmd.Flags())
-	if err != nil {
-		log.Fatalf("Binding flags failed: %s", err)
-	}
-	viper.AutomaticEnv()
-}
-
-func runAddCmd(args []string) {
-	fmt.Printf("Adding %s\n to current collection", strings.Join(args, " "))
-}
-
-func registerRunCmd(rootCmd *cobra.Command) {
-	runCmd := &cobra.Command{
-		Use:   "run [options] cmd",
-		Short: "Execute a command on all directories in project",
-		Run: func(cmd *cobra.Command, args []string) {
-			runRunCmd(args)
-		},
-	}
-	rootCmd.AddCommand(runCmd)
-	err := viper.BindPFlags(runCmd.Flags())
-	if err != nil {
-		log.Fatalf("Binding flags failed: %s", err)
-	}
-	viper.AutomaticEnv()
-}
-
-func runRunCmd(args []string) {
-	fmt.Printf("Running %s\n", args[0])
-}
-
 func registerHistoryCmd(rootCmd *cobra.Command) {
 	historyCmd := &cobra.Command{
 		Use:   "history [options]",
@@ -175,24 +136,4 @@ func registerLsCmd(rootCmd *cobra.Command) {
 
 func lsLsCmd(args []string) {
 	fmt.Printf("directories %s\n", args[0])
-}
-
-func registerRmCmd(rootCmd *cobra.Command) {
-	rmCmd := &cobra.Command{
-		Use:   "rm [options] <list of directories>",
-		Short: "Remove directories from a collection",
-		Run: func(cmd *cobra.Command, args []string) {
-			rmRmCmd(args)
-		},
-	}
-	rootCmd.AddCommand(rmCmd)
-	err := viper.BindPFlags(rmCmd.Flags())
-	if err != nil {
-		log.Fatalf("Binding flags failed: %s", err)
-	}
-	viper.AutomaticEnv()
-}
-
-func rmRmCmd(args []string) {
-	fmt.Printf("Removing directories %s\n", strings.Join(args, " "))
 }

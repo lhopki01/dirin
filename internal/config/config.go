@@ -52,10 +52,54 @@ func (c *Collection) CreateCollection() error {
 		}
 		return errors.New(fmt.Sprintf("Unknown error creating collection: %s", err))
 	}
+	err = c.WriteCollection(f)
+	return err
+}
+
+func LoadCollection(collectionName string) (c *Collection, f *os.File, err error) {
+	fileName := path.Join(collectionsDir(), collectionName)
+	f, err = os.OpenFile(fileName, os.O_RDWR, 0600)
+	if err != nil {
+		fmt.Println("can't open config")
+		log.Fatal(err)
+		return nil, nil, err
+	}
+	fi, err := f.Stat()
+	if err != nil {
+		log.Fatal(err)
+		return nil, nil, err
+	}
+	b := make([]byte, fi.Size())
+	_, err = f.Read(b)
+	if err != nil {
+		log.Fatal(err)
+		return nil, nil, err
+	}
+	err = yaml.Unmarshal(b, &c)
+	if err != nil {
+		log.Fatal(err)
+		return nil, nil, err
+	}
+
+	return c, f, err
+}
+
+func (c *Collection) WriteCollection(f *os.File) (err error) {
 	bytes, err := yaml.Marshal(c)
 	if err != nil {
 		log.Fatal(err)
 	}
+	f.Truncate(0)
+	f.Seek(0, 0)
 	_, err = f.Write(bytes)
+	err = f.Close()
 	return err
+}
+
+func (c *Collection) AddDirectoriesToCollection(dirs []Dir, f *os.File) error {
+	for _, dir := range dirs {
+		c.Directories[dir.Path] = &dir
+	}
+	c.WriteCollection(f)
+	return nil
 }
