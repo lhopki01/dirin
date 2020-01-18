@@ -15,6 +15,7 @@ func AddCommands() {
 		Use:   "dirin <subcommand>",
 		Short: "A tool to run commands across multiple directories",
 	}
+	rootCmd.PersistentFlags().String("collection", "", "The collection to add directories too")
 
 	// Project
 	registerCreateCmd(rootCmd)
