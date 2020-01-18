@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/davecgh/go-spew/spew"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -60,7 +61,7 @@ func LoadCollection(collectionName string) (c *Collection, f *os.File, err error
 	fileName := path.Join(collectionsDir(), collectionName)
 	f, err = os.OpenFile(fileName, os.O_RDWR, 0600)
 	if err != nil {
-		fmt.Println("can't open config")
+		fmt.Printf("can't open config for %s\n", collectionName)
 		log.Fatal(err)
 		return nil, nil, err
 	}
@@ -96,10 +97,14 @@ func (c *Collection) WriteCollection(f *os.File) (err error) {
 	return err
 }
 
-func (c *Collection) AddDirectoriesToCollection(dirs []Dir, f *os.File) error {
+func (c *Collection) AddDirectoriesToCollection(dirs []*Dir, f *os.File) error {
 	for _, dir := range dirs {
-		c.Directories[dir.Path] = &dir
+		spew.Dump(dir)
+		if _, ok := c.Directories[dir.Path]; !ok {
+			c.Directories[dir.Path] = dir
+		}
 	}
+	spew.Dump(c)
 	c.WriteCollection(f)
 	return nil
 }

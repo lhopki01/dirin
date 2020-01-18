@@ -16,6 +16,10 @@ func AddCommands() {
 		Short: "A tool to run commands across multiple directories",
 	}
 	rootCmd.PersistentFlags().String("collection", "", "The collection to add directories too")
+	err := viper.BindPFlags(rootCmd.PersistentFlags())
+	if err != nil {
+		log.Fatalf("Binding flags failed: %s", err)
+	}
 
 	// Project
 	registerCreateCmd(rootCmd)

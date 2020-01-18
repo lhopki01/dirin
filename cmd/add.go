@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/lhopki01/dirin/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -28,10 +29,10 @@ func registerAddCmd(rootCmd *cobra.Command) {
 }
 
 func runAddCmd(args []string) {
-	dirs := []config.Dir{}
+	dirs := []*config.Dir{}
 	for _, dir := range args {
 		if stat, err := os.Stat(dir); err == nil && stat.IsDir() {
-			newDir := config.Dir{
+			newDir := &config.Dir{
 				Path: dir,
 				Name: filepath.Base(dir),
 			}
@@ -40,6 +41,7 @@ func runAddCmd(args []string) {
 			fmt.Printf("%s is not a dir\n", dir)
 		}
 	}
+	spew.Dump(dirs)
 	c, f, _ := config.LoadCollection(viper.GetString("collection"))
 	c.AddDirectoriesToCollection(dirs, f)
 }
