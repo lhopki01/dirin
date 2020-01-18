@@ -13,7 +13,7 @@ import (
 func registerCreateCmd(rootCmd *cobra.Command) {
 	createCmd := &cobra.Command{
 		Use:   "create [collection name]",
-		Short: "Create a collection of folders for subsequent commands to run against",
+		Short: "Create a collection of directories for subsequent commands to run against",
 		Run: func(cmd *cobra.Command, args []string) {
 			runCreateCmd(args)
 		},
@@ -31,11 +31,10 @@ func runCreateCmd(args []string) {
 	c := &config.Collection{
 		Name: args[0],
 	}
-	bytes, err := yaml.Marshal(c)
+	_, err := yaml.Marshal(c)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(string(bytes))
 	err = c.CreateCollection()
 	if err != nil {
 		log.Fatal(err)

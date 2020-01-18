@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/davecgh/go-spew/spew"
 	yaml "gopkg.in/yaml.v3"
 )
 
@@ -16,11 +15,10 @@ func configDir() string {
 	if xdgDir := os.Getenv("XDG_CONFIG_HOME"); xdgDir != "" {
 		return path.Join(xdgDir, appName)
 	}
-	// Default to `~/.kk` rather than `~/.config/kk` to match the kubectl default of `~/.kube`
 	return path.Join(homeDir(), ".config", appName)
 }
 
-func collectionsDir() string {
+func CollectionsDir() string {
 	return path.Join(configDir(), "collections")
 }
 
@@ -37,7 +35,7 @@ func EnsureConfigDir() error {
 	if err != nil {
 		return err
 	}
-	err = os.MkdirAll(collectionsDir(), 0755)
+	err = os.MkdirAll(CollectionsDir(), 0755)
 	if err != nil {
 		return err
 	}
@@ -45,7 +43,7 @@ func EnsureConfigDir() error {
 }
 
 func (c *Collection) CreateCollection() error {
-	fileName := path.Join(collectionsDir(), c.Name)
+	fileName := path.Join(CollectionsDir(), c.Name)
 	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
 	if err != nil {
 		if os.IsExist(err) {
@@ -57,28 +55,30 @@ func (c *Collection) CreateCollection() error {
 	return err
 }
 
+func LoadCollectionRead(collectionName string) (c *Collection, err error) {
+	c, f, err := LoadCollection(collectionName)
+	f.Close()
+	return c, err
+}
+
 func LoadCollection(collectionName string) (c *Collection, f *os.File, err error) {
-	fileName := path.Join(collectionsDir(), collectionName)
+	fileName := path.Join(CollectionsDir(), collectionName)
 	f, err = os.OpenFile(fileName, os.O_RDWR, 0600)
 	if err != nil {
 		fmt.Printf("can't open config for %s\n", collectionName)
-		log.Fatal(err)
 		return nil, nil, err
 	}
 	fi, err := f.Stat()
 	if err != nil {
-		log.Fatal(err)
 		return nil, nil, err
 	}
 	b := make([]byte, fi.Size())
 	_, err = f.Read(b)
 	if err != nil {
-		log.Fatal(err)
 		return nil, nil, err
 	}
 	err = yaml.Unmarshal(b, &c)
 	if err != nil {
-		log.Fatal(err)
 		return nil, nil, err
 	}
 
@@ -99,12 +99,10 @@ func (c *Collection) WriteCollection(f *os.File) (err error) {
 
 func (c *Collection) AddDirectoriesToCollection(dirs []*Dir, f *os.File) error {
 	for _, dir := range dirs {
-		spew.Dump(dir)
 		if _, ok := c.Directories[dir.Path]; !ok {
 			c.Directories[dir.Path] = dir
 		}
 	}
-	spew.Dump(c)
 	c.WriteCollection(f)
 	return nil
 }
