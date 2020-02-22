@@ -20,11 +20,8 @@ func registerRmCmd(rootCmd *cobra.Command) {
 		},
 	}
 	rootCmd.AddCommand(rmCmd)
-	err := viper.BindPFlags(rmCmd.Flags())
-	if err != nil {
-		log.Fatalf("Binding flags failed: %s", err)
-	}
-	viper.AutomaticEnv()
+	rmCmd.Flags().String("collection", "", "The collection to add directories too")
+	viper.BindPFlag("collectionRm", rmCmd.Flags().Lookup("collection"))
 }
 
 func rmRmCmd(args []string) {
@@ -35,7 +32,7 @@ func rmRmCmd(args []string) {
 	} else {
 		log.Fatal("Please specify a list of directories to remove")
 	}
-	c, f, _ := config.LoadCollection(viper.GetString("collection"))
+	c, f, _ := config.LoadCollection(viper.GetString("collectionRm"))
 	for _, dir := range args {
 		absoluteFilePath, err := filepath.Abs(dir)
 		if err != nil {

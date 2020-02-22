@@ -11,6 +11,7 @@ type Collection struct {
 
 type Dir struct {
 	Name     string    `yaml:"name"`
+	Color    int       `yaml:"color"`
 	Path     string    `yaml:"path"`
 	Commands []Command `yaml:"commands"`
 }

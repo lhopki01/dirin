@@ -106,3 +106,11 @@ func (c *Collection) AddDirectoriesToCollection(dirs []*Dir, f *os.File) error {
 	c.WriteCollection(f)
 	return nil
 }
+
+func (c *Collection) GetUsedColors() map[int]bool {
+	usedColors := map[int]bool{}
+	for _, dir := range c.Directories {
+		usedColors[dir.Color] = true
+	}
+	return usedColors
+}

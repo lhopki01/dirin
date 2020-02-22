@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-	"sync"
 
+	"github.com/lhopki01/dirin/internal/color"
 	"github.com/lhopki01/dirin/internal/config"
+	"github.com/remeh/sizedwaitgroup"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -20,39 +21,38 @@ func registerRunCmd(rootCmd *cobra.Command) {
 		},
 	}
 	rootCmd.AddCommand(runCmd)
-	//runCmd.Flags().String("collection", "", "The collection to add directories too")
-	//err := viper.BindPFlags(runCmd.Flags())
-	//if err != nil {
-	//	log.Fatalf("Binding flags failed: %s", err)
-	//}
+	runCmd.Flags().String("collection", "", "The collection to add directories too")
+	runCmd.Flags().Int("parallelism", 25, "The number of processes to run in parallel (default 25)")
+	viper.BindPFlag("collectionRun", runCmd.Flags().Lookup("collection"))
+	viper.BindPFlag("parallelism", runCmd.Flags().Lookup("parallelism"))
 	viper.AutomaticEnv()
 }
 
 func runRunCmd(args []string) {
 	fmt.Printf("Running %s\n", strings.Join(args, " "))
-	c, f, _ := config.LoadCollection(viper.GetString("collection"))
-	var wg sync.WaitGroup
+	c, f, _ := config.LoadCollection(viper.GetString("collectionRun"))
+	swg := sizedwaitgroup.New(viper.GetInt("parallelism"))
 	for _, dir := range c.Directories {
-		wg.Add(1)
-		go runCommand(c, dir, args, &wg)
+		swg.Add()
+		go runCommand(c, dir, args, &swg)
 	}
-	wg.Wait()
+	swg.Wait()
 	c.WriteCollection(f)
 }
 
-func runCommand(c *config.Collection, dir *config.Dir, commands []string, wg *sync.WaitGroup) {
+func runCommand(c *config.Collection, dir *config.Dir, commands []string, swg *sizedwaitgroup.SizedWaitGroup) {
+	defer swg.Done()
 	cmd := exec.Command("sh", append([]string{"-c"}, commands...)...)
 	cmd.Dir = dir.Path
 	combinedOutput, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Printf("%s:\n", dir.Path)
+	color.PrintDirectory(dir)
 	fmt.Printf(string(combinedOutput))
 	command := config.Command{
 		Command: commands,
 		Output:  string(combinedOutput),
 	}
 	c.Directories[dir.Path].Commands = append(c.Directories[dir.Path].Commands, command)
-	wg.Done()
 }

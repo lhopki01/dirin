@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/lhopki01/dirin/internal/color"
 	"github.com/lhopki01/dirin/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,15 +20,15 @@ func registerAddCmd(rootCmd *cobra.Command) {
 		},
 	}
 	rootCmd.AddCommand(addCmd)
-	//addCmd.Flags().String("collectionA", "", "The collection to add directories too")
-	//err := viper.BindPFlags(addCmd.Flags())
-	//if err != nil {
-	//	log.Fatalf("Binding flags failed: %s", err)
-	//}
-	viper.AutomaticEnv()
+	addCmd.Flags().String("collection", "", "The collection to add directories too")
+	viper.BindPFlag("collectionAdd", addCmd.Flags().Lookup("collection"))
 }
 
 func runAddCmd(args []string) {
+
+	c, f, _ := config.LoadCollection(viper.GetString("collectionAdd"))
+	usedColors := c.GetUsedColors()
+
 	dirs := []*config.Dir{}
 	for _, dir := range args {
 		if stat, err := os.Stat(dir); err == nil && stat.IsDir() {
@@ -35,9 +36,12 @@ func runAddCmd(args []string) {
 			if err != nil {
 				fmt.Printf("Can't find absolute filepath for %s\n", dir)
 			} else {
+				newColor := 15
+				usedColors, newColor = color.NewColor(usedColors)
 				newDir := &config.Dir{
-					Path: absoluteFilePath,
-					Name: filepath.Base(dir),
+					Path:  absoluteFilePath,
+					Color: newColor,
+					Name:  filepath.Base(dir),
 				}
 				dirs = append(dirs, newDir)
 			}
@@ -45,6 +49,5 @@ func runAddCmd(args []string) {
 			fmt.Printf("%s is not a dir\n", dir)
 		}
 	}
-	c, f, _ := config.LoadCollection(viper.GetString("collection"))
 	c.AddDirectoriesToCollection(dirs, f)
 }
