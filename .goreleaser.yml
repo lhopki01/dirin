@@ -38,14 +38,3 @@ brews:
     folder: Formula
     install: |
       bin.install "dirin"
-dockers:
-  -
-    goos: linux
-    goarch: amd64
-    binaries:
-    - dirin
-    image_templates:
-    - "lhopki01/dirin:latest"
-    - "lhopki01/dirin:{{ .Tag }}"
-    skip_push: false
-    dockerfile: Dockerfile
