@@ -39,7 +39,60 @@ func EnsureConfigDir() error {
 	if err != nil {
 		return err
 	}
+	err = EnsureConfigFile()
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func EnsureConfigFile() error {
+	fileName := path.Join(configDir(), "config.yaml")
+	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0600)
+	if err != nil {
+		if os.IsExist(err) {
+			return nil
+		}
+		return errors.New(fmt.Sprintf("Unknown error creating collection: %s", err))
+	}
+	bytes, err := yaml.Marshal(Config{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	f.Truncate(0)
+	f.Seek(0, 0)
+	_, err = f.Write(bytes)
+	err = f.Close()
+	return err
+}
+
+func LoadConfigRead() (c *Config, err error) {
+	c, f, err := LoadConfig()
+	f.Close()
+	return c, err
+}
+
+func LoadConfig() (c *Config, f *os.File, err error) {
+	fileName := path.Join(CollectionsDir(), "config.yaml")
+	f, err = os.OpenFile(fileName, os.O_RDWR, 0600)
+	if err != nil {
+		fmt.Printf("can't open config.yaml\n")
+		return nil, nil, err
+	}
+	fi, err := f.Stat()
+	if err != nil {
+		return nil, nil, err
+	}
+	b := make([]byte, fi.Size())
+	_, err = f.Read(b)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = yaml.Unmarshal(b, &c)
+	if err != nil {
+		return nil, nil, err
+	}
+	return c, f, err
 }
 
 func (c *Collection) CreateCollection() error {
@@ -81,7 +134,6 @@ func LoadCollection(collectionName string) (c *Collection, f *os.File, err error
 	if err != nil {
 		return nil, nil, err
 	}
-
 	return c, f, err
 }
 
