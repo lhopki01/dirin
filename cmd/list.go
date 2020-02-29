@@ -12,8 +12,9 @@ import (
 
 func registerListCmd(rootCmd *cobra.Command) {
 	listCmd := &cobra.Command{
-		Use:   "list [project name]",
+		Use:   "list",
 		Short: "List all collections",
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			runListCmd(args)
 		},
@@ -27,6 +28,13 @@ func registerListCmd(rootCmd *cobra.Command) {
 }
 
 func runListCmd(args []string) {
+	for _, c := range getCollections() {
+		fmt.Println(c)
+	}
+}
+
+func getCollections() []string {
+	fileNames := []string{}
 	files, err := ioutil.ReadDir(config.CollectionsDir())
 	if err != nil {
 		log.Fatal(err)
@@ -35,8 +43,9 @@ func runListCmd(args []string) {
 		if !f.IsDir() {
 			c, err := config.LoadCollectionRead(f.Name())
 			if err == nil && c != nil {
-				fmt.Println(f.Name())
+				fileNames = append(fileNames, f.Name())
 			}
 		}
 	}
+	return fileNames
 }

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -15,8 +16,9 @@ import (
 
 func registerRunCmd(rootCmd *cobra.Command) {
 	runCmd := &cobra.Command{
-		Use:   "run [options] cmd",
+		Use:   "run <cmd>",
 		Short: "Execute a command in all directories in a collection",
+		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			runRunCmd(args)
 		},
@@ -35,8 +37,17 @@ func runRunCmd(args []string) {
 		log.Fatal(err)
 	}
 
+	c, f, err := config.LoadCollection(collection)
+	if err != nil {
+		if os.IsNotExist(err) {
+			fmt.Printf("Collection %s does not exit.  Please choose from: %v\n", collection, getCollections())
+			fmt.Println("Or create the collection using dirin create <collection name>")
+			os.Exit(1)
+		}
+		log.Fatal(err)
+	}
+
 	fmt.Printf("Running %s\n", strings.Join(args, " "))
-	c, f, _ := config.LoadCollection(collection)
 	swg := sizedwaitgroup.New(viper.GetInt("parallelism"))
 	for _, dir := range c.Directories {
 		swg.Add()

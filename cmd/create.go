@@ -12,10 +12,11 @@ import (
 
 func registerCreateCmd(rootCmd *cobra.Command) {
 	createCmd := &cobra.Command{
-		Use:   "create [collection name]",
+		Use:   "create <collection name>",
 		Short: "Create a collection of directories for subsequent commands to run against",
+		Args:  cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
-			runCreateCmd(args)
+			runCreateCmd(args[0])
 		},
 	}
 	rootCmd.AddCommand(createCmd)
@@ -26,10 +27,10 @@ func registerCreateCmd(rootCmd *cobra.Command) {
 	viper.AutomaticEnv()
 }
 
-func runCreateCmd(args []string) {
-	fmt.Printf("Creating collection %s\n", args[0])
+func runCreateCmd(collection string) {
+	fmt.Printf("Creating collection %s\n", collection)
 	c := &config.Collection{
-		Name: args[0],
+		Name: collection,
 	}
 	_, err := yaml.Marshal(c)
 	if err != nil {
@@ -39,4 +40,5 @@ func runCreateCmd(args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	runSwitchCmd(collection)
 }
