@@ -14,8 +14,9 @@ import (
 
 func registerAddCmd(rootCmd *cobra.Command) {
 	addCmd := &cobra.Command{
-		Use:   "add [list of directories]",
+		Use:   "add <space separated list of directories>",
 		Short: "Add a list directories to a collection",
+		Args:  cobra.MinimumNArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			runAddCmd(args)
 		},
@@ -31,7 +32,16 @@ func runAddCmd(args []string) {
 		log.Fatal(err)
 	}
 
-	c, f, _ := config.LoadCollection(collection)
+	c, f, err := config.LoadCollection(collection)
+	if err != nil {
+		if os.IsNotExist(err) {
+			fmt.Printf("Collection %s does not exit.  Please choose from: %v\n", collection, getCollections())
+			fmt.Println("Or create the collection using dirin create <collection name>")
+			os.Exit(1)
+		}
+		log.Fatal(err)
+	}
+
 	usedColors := c.GetUsedColors()
 
 	dirs := []*config.Dir{}
@@ -50,6 +60,7 @@ func runAddCmd(args []string) {
 				}
 				dirs = append(dirs, newDir)
 			}
+			fmt.Printf("Adding %s\n", dir)
 		} else {
 			fmt.Printf("%s is not a dir\n", dir)
 		}
