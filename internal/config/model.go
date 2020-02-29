@@ -1,7 +1,7 @@
 package config
 
 type Config struct {
-	ActiveProject string `yaml:"activeProject"`
+	ActiveCollection string `yaml:"activeCollection"`
 }
 
 type Collection struct {

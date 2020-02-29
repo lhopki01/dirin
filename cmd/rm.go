@@ -32,7 +32,11 @@ func rmRmCmd(args []string) {
 	} else {
 		log.Fatal("Please specify a list of directories to remove")
 	}
-	c, f, _ := config.LoadCollection(viper.GetString("collectionRm"))
+	collection, err := config.GetCollection("collectionRm")
+	if err != nil {
+		log.Fatal(err)
+	}
+	c, f, _ := config.LoadCollection(collection)
 	for _, dir := range args {
 		absoluteFilePath, err := filepath.Abs(dir)
 		if err != nil {

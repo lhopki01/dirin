@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"sort"
 
 	"github.com/lhopki01/dirin/internal/color"
@@ -25,7 +26,11 @@ func registerLsCmd(rootCmd *cobra.Command) {
 }
 
 func runLsCmd(args []string) {
-	c, _ := config.LoadCollectionRead(viper.GetString("collectionLs"))
+	collection, err := config.GetCollection("collectionLs")
+	if err != nil {
+		log.Fatal(err)
+	}
+	c, _ := config.LoadCollectionRead(collection)
 	dirs := []string{}
 	for _, dir := range c.Directories {
 		dirs = append(dirs, dir.Path)

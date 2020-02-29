@@ -12,5 +12,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	err = config.EnsureConfigFile()
+	if err != nil {
+		log.Fatal(err)
+	}
 	cmd.AddCommands()
 }
