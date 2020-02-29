@@ -29,6 +29,7 @@ func registerRunCmd(rootCmd *cobra.Command) {
 }
 
 func runRunCmd(args []string) {
+
 	fmt.Printf("Running %s\n", strings.Join(args, " "))
 	c, f, _ := config.LoadCollection(viper.GetString("collectionRun"))
 	swg := sizedwaitgroup.New(viper.GetInt("parallelism"))
