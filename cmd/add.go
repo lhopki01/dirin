@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -25,8 +26,12 @@ func registerAddCmd(rootCmd *cobra.Command) {
 }
 
 func runAddCmd(args []string) {
+	collection, err := config.GetCollection("collectionAdd")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	c, f, _ := config.LoadCollection(viper.GetString("collectionAdd"))
+	c, f, _ := config.LoadCollection(collection)
 	usedColors := c.GetUsedColors()
 
 	dirs := []*config.Dir{}

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/lhopki01/dirin/internal/color"
@@ -25,8 +26,11 @@ func registerHistoryCmd(rootCmd *cobra.Command) {
 }
 
 func historyHistoryCmd(args []string) {
-	fmt.Printf("History for current project\n")
-	c, _ := config.LoadCollectionRead(viper.GetString("collectionHistory"))
+	collection, err := config.GetCollection("collectionHistory")
+	if err != nil {
+		log.Fatal(err)
+	}
+	c, _ := config.LoadCollectionRead(collection)
 	for _, dir := range c.Directories {
 		color.PrintDirectory(dir)
 		for _, cmd := range dir.Commands {

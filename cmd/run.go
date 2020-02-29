@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 	"strings"
 
@@ -29,8 +30,13 @@ func registerRunCmd(rootCmd *cobra.Command) {
 }
 
 func runRunCmd(args []string) {
+	collection, err := config.GetCollection("collectionRun")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Printf("Running %s\n", strings.Join(args, " "))
-	c, f, _ := config.LoadCollection(viper.GetString("collectionRun"))
+	c, f, _ := config.LoadCollection(collection)
 	swg := sizedwaitgroup.New(viper.GetInt("parallelism"))
 	for _, dir := range c.Directories {
 		swg.Add()
