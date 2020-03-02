@@ -4,7 +4,7 @@ A tool to run commands in multiple repos in parallel and record outputs.
 ## Install
 ```
 brew tap lhopki01/brew git@github.com:lhopki01/brew
-brew install git-mass-sync
+brew install dirin
 ```
 
 ## Howto
